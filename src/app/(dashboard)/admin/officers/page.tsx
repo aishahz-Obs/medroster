@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ROLE_LABELS } from "@/lib/constants";
-import { Users, UserCheck, UserX, Shield } from "lucide-react";
+import { Users, UserCheck, Shield } from "lucide-react";
 import type { Profile } from "@/lib/types";
+import { AddOfficerForm } from "./add-officer-form";
 
 export const metadata = { title: "Officers" };
 
@@ -38,9 +39,12 @@ export default async function OfficersPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Officers</h1>
-        <p className="text-sm text-gray-500">All department medical officers</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Officers</h1>
+          <p className="text-sm text-gray-500">All department medical officers</p>
+        </div>
+        {(me.role === "superadmin" || me.role === "admin") && <AddOfficerForm />}
       </div>
 
       {/* Summary cards */}

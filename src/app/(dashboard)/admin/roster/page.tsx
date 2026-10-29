@@ -27,7 +27,7 @@ export default async function AdminRosterPage() {
       .select("*, officer:profiles!roster_entries_officer_id_fkey(full_name, staff_id), location:locations!roster_entries_location_id_fkey(name)")
       .gte("entry_date", format(weekStart, "yyyy-MM-dd"))
       .lte("entry_date", format(addDays(weekStart, 4), "yyyy-MM-dd"))
-      .order("work_date"),
+      .order("entry_date"),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.from("profiles") as any).select("id, full_name, staff_id").eq("is_active", true).order("full_name"),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
