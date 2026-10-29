@@ -18,7 +18,7 @@ export default async function AttendancePage() {
   const { data: todayRaw } = await (supabase.from("clock_ins") as any)
     .select("*")
     .eq("officer_id", user.id)
-    .eq("work_date", today)
+    .eq("attendance_date", today)
     .maybeSingle();
   const todayClockIn = todayRaw as import("@/lib/types").ClockIn | null;
 
@@ -106,8 +106,8 @@ export default async function AttendancePage() {
                 <li key={entry.id} className="px-4 py-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900">
-                      {format(new Date(entry.work_date + "T00:00:00"), "EEE, d MMM yyyy")}
-                      {isToday(new Date(entry.work_date + "T00:00:00")) && (
+                      {format(new Date(entry.attendance_date + "T00:00:00"), "EEE, d MMM yyyy")}
+                      {isToday(new Date(entry.attendance_date + "T00:00:00")) && (
                         <span className="ml-2 text-xs text-brand-600 font-semibold">Today</span>
                       )}
                     </p>

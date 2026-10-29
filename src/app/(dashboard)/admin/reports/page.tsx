@@ -44,7 +44,7 @@ export default async function ReportsPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.from("clock_ins") as any)
       .select("id, officer_id, status")
-      .eq("work_date", today),
+      .eq("attendance_date", today),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.from("leave_requests") as any)
       .select("leave_type, days_count")
@@ -53,7 +53,7 @@ export default async function ReportsPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.from("clock_ins") as any)
       .select("id")
-      .gte("work_date", monthStart)
+      .gte("attendance_date", monthStart)
       .eq("status", "mia"),
   ]);
 

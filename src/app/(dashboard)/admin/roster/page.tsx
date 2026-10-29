@@ -25,8 +25,8 @@ export default async function AdminRosterPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.from("roster_entries") as any)
       .select("*, officer:profiles!roster_entries_officer_id_fkey(full_name, staff_id), location:locations!roster_entries_location_id_fkey(name)")
-      .gte("work_date", format(weekStart, "yyyy-MM-dd"))
-      .lte("work_date", format(addDays(weekStart, 4), "yyyy-MM-dd"))
+      .gte("entry_date", format(weekStart, "yyyy-MM-dd"))
+      .lte("entry_date", format(addDays(weekStart, 4), "yyyy-MM-dd"))
       .order("work_date"),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.from("profiles") as any).select("id, full_name, staff_id").eq("is_active", true).order("full_name"),
@@ -34,7 +34,7 @@ export default async function AdminRosterPage() {
     (supabase.from("locations") as any).select("*").eq("is_active", true).order("name"),
   ]);
 
-  const entries   = (entriesRaw  as (RosterEntry & { officer: Pick<Profile, "full_name" | "staff_id"> | null; location: Pick<Location, "name"> | null })[] | null) ?? [];
+  const entries = (entriesRaw as (RosterEntry & { officer: Pick<Profile, "full_name" | "staff_id"> | null; location: Pick<Location, "name"> | null })[] | null) ?? [];
   const officers  = (officersRaw  as Pick<Profile, "id" | "full_name" | "staff_id">[] | null) ?? [];
   const locations = (locationsRaw as Location[] | null) ?? [];
 
@@ -65,10 +65,10 @@ export default async function AdminRosterPage() {
           <tbody className="divide-y divide-gray-100">
             {weekDays.map(day => {
               const dateStr   = format(day, "yyyy-MM-dd");
-              const dayEnts   = entries.filter(e => e.work_date === dateStr);
+              const dayEnts   = entries.filter(e => e.entry_date === dateStr);
               const total     = dayEnts.length;
-              const oncall    = dayEnts.filter(e => e.shift_type === "oncall").length;
-              const postcall  = dayEnts.filter(e => e.shift_type === "postcall").length;
+              const oncall    = dayEnts.filter(e => e.shift === "oncall").length;
+              const postcall  = dayEnts.filter(e => e.shift === "postcall").length;
               const isUnder   = total < MIN_DAILY_HEADCOUNT;
               return (
                 <tr key={dateStr} className="hover:bg-gray-50">

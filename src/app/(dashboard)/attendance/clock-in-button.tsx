@@ -66,12 +66,12 @@ export function ClockInButton({ userId, workDate }: Props) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: insertError } = await (supabase.from("clock_ins") as any).insert({
-      officer_id:    userId,
-      work_date:     date,
-      clocked_in_at: clockedInAt,
-      location_name: location,
-      status:        "present",
-      notes:         JSON.stringify(notesData),
+      officer_id:      userId,
+      attendance_date: date,
+      clocked_in_at:   clockedInAt,
+      location_name:   location,
+      status:          "present",
+      notes:           JSON.stringify(notesData),
     });
 
     if (insertError) {

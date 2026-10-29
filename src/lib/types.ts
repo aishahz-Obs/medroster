@@ -38,10 +38,10 @@ export interface Location {
 
 export interface RosterEntry {
   id: string;
-  work_date: string;
+  entry_date: string;
   officer_id: string;
   location_id: number | null;
-  shift_type: ShiftType;
+  shift: ShiftType;
   oncall_start: string | null;
   oncall_end: string | null;
   is_tagger: boolean;
@@ -56,10 +56,8 @@ export interface RosterEntry {
 export interface ClockIn {
   id: string;
   officer_id: string;
-  work_date: string;
+  attendance_date: string;
   clocked_in_at: string | null;
-  latitude: number | null;
-  longitude: number | null;
   location_name: string | null;
   status: AttendanceStatus;
   notes: string | null;
