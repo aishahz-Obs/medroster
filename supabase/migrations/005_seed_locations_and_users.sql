@@ -1,18 +1,18 @@
 -- ============================================================
 -- STEP 1: Seed O&G locations (run this FIRST)
 -- ============================================================
-insert into public.locations (name, code, min_staff, max_staff, is_active, display_order)
+insert into public.locations (name, code, min_staff, max_staff, display_order)
 values
-  ('Labour Unit',              'LDU',    2, 4, true,  1),
-  ('PAC 3',                    'PAC3',   1, 2, true,  2),
-  ('PAC 4',                    'PAC4',   1, 2, true,  3),
-  ('EPAU/ED',                  'EPAU',   1, 2, true,  4),
-  ('Ward 8A',                  'W8A',    1, 2, true,  5),
-  ('Ward 8B',                  'W8B',    1, 2, true,  6),
-  ('Maternity OT',             'MOT',    2, 3, true,  7),
-  ('General OT',               'GOT',    1, 2, true,  8),
-  ('Clinic',                   'CLIN',   1, 2, true,  9),
-  ('Periphery/Emergency GOT',  'PEGOT',  1, 2, true, 10)
+  ('Labour Unit',             'LDU',   2, 4,  1),
+  ('PAC 3',                   'PAC3',  1, 2,  2),
+  ('PAC 4',                   'PAC4',  1, 2,  3),
+  ('EPAU/ED',                 'EPAU',  1, 2,  4),
+  ('Ward 8A',                 'W8A',   1, 2,  5),
+  ('Ward 8B',                 'W8B',   1, 2,  6),
+  ('Maternity OT',            'MOT',   2, 3,  7),
+  ('General OT',              'GOT',   1, 2,  8),
+  ('Clinic',                  'CLIN',  1, 2,  9),
+  ('Periphery/Emergency GOT', 'PEGOT', 1, 2, 10)
 on conflict (name) do nothing;
 
 
