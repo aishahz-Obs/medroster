@@ -16,9 +16,9 @@ export default async function RosterPage() {
   const endDate   = format(weekDays[4], "yyyy-MM-dd");
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: entriesRaw } = await supabase
+  const { data: entriesRaw } = await (supabase as any)
     .from("roster_entries")
-    .select("*, officer:profiles(full_name, staff_id, role), location:locations(name, code)")
+    .select("*, officer:profiles!roster_entries_officer_id_fkey(full_name, staff_id, role), location:locations!roster_entries_location_id_fkey(name, code)")
     .gte("entry_date", startDate)
     .lte("entry_date", endDate)
     .order("entry_date")
@@ -87,9 +87,7 @@ export default async function RosterPage() {
                 <th
                   key={day.toString()}
                   className={`px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider
-                    ${isToday(day)
-                      ? "bg-brand-50 text-brand-700"
-                      : "text-gray-500"}`}
+                    ${isToday(day) ? "bg-brand-50 text-brand-700" : "text-gray-500"}`}
                 >
                   {format(day, "EEE d")}
                 </th>
@@ -102,39 +100,32 @@ export default async function RosterPage() {
                 <td className="px-4 py-3 font-medium text-gray-700 text-xs leading-snug">
                   {loc.name}
                   <span className="block text-gray-400 font-normal">
-                    min {loc.min_staff}
-                    {loc.max_staff !== loc.min_staff ? `–${loc.max_staff}` : ""}
+                    min {loc.min_staff}{loc.max_staff !== loc.min_staff ? `–${loc.max_staff}` : ""}
                   </span>
                 </td>
                 {weekDays.map(day => {
-                  const dateStr = format(day, "yyyy-MM-dd");
-                  const cell    = byDate[dateStr]?.[loc.name] ?? [];
+                  const dateStr    = format(day, "yyyy-MM-dd");
+                  const cell       = byDate[dateStr]?.[loc.name] ?? [];
                   const understaff = cell.length < loc.min_staff;
                   return (
-                    <td
-                      key={dateStr}
-                      className={`px-2 py-2 align-top text-center
-                        ${isToday(day) ? "bg-brand-50/40" : ""}
-                        ${understaff && cell.length > 0 ? "bg-red-50/40" : ""}`}
+                    <td key={dateStr} className={`px-2 py-2 align-top text-center
+                      ${isToday(day) ? "bg-brand-50/40" : ""}
+                      ${understaff && cell.length > 0 ? "bg-red-50/40" : ""}`}
                     >
                       {cell.length === 0 ? (
                         <span className="text-gray-300 text-xs">—</span>
                       ) : (
                         <div className="flex flex-col gap-1 items-center">
                           {cell.map(entry => (
-                            <span
-                              key={entry.id}
-                              title={`${entry.officer?.full_name} — ${SHIFT_LABELS[entry.shift]}`}
-                              className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium truncate max-w-[80px]
-                                ${SHIFT_COLORS[entry.shift]}`}
+                            <span key={entry.id}
+                              title={`${entry.officer?.full_name ?? "?"} — ${SHIFT_LABELS[entry.shift]}`}
+                              className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium truncate max-w-[80px] ${SHIFT_COLORS[entry.shift]}`}
                             >
-                              {entry.officer?.full_name.split(" ").pop()}
+                              {(entry.officer?.full_name ?? "?").split(" ").pop()}
                             </span>
                           ))}
                           {understaff && (
-                            <span className="text-[10px] text-red-500 font-semibold">
-                              ⚠ {cell.length}/{loc.min_staff}
-                            </span>
+                            <span className="text-[10px] text-red-500 font-semibold">⚠ {cell.length}/{loc.min_staff}</span>
                           )}
                         </div>
                       )}
@@ -143,6 +134,38 @@ export default async function RosterPage() {
                 })}
               </tr>
             ))}
+
+            {/* Fallback row: entries where location wasn't matched (location_id = null) */}
+            {weekDays.some(d => (byDate[format(d, "yyyy-MM-dd")]?.["Unassigned"] ?? []).length > 0) && (
+              <tr className="border-b border-gray-100 bg-amber-50/40">
+                <td className="px-4 py-3 font-medium text-amber-700 text-xs leading-snug">
+                  Unassigned
+                  <span className="block text-amber-400 font-normal">no location set</span>
+                </td>
+                {weekDays.map(day => {
+                  const dateStr = format(day, "yyyy-MM-dd");
+                  const cell    = byDate[dateStr]?.["Unassigned"] ?? [];
+                  return (
+                    <td key={dateStr} className={`px-2 py-2 align-top text-center ${isToday(day) ? "bg-brand-50/40" : ""}`}>
+                      {cell.length === 0 ? (
+                        <span className="text-gray-300 text-xs">—</span>
+                      ) : (
+                        <div className="flex flex-col gap-1 items-center">
+                          {cell.map(entry => (
+                            <span key={entry.id}
+                              title={`${entry.officer?.full_name ?? "?"} — ${SHIFT_LABELS[entry.shift]}`}
+                              className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium truncate max-w-[80px] ${SHIFT_COLORS[entry.shift]}`}
+                            >
+                              {(entry.officer?.full_name ?? "?").split(" ").pop()}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
