@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="92" fill="#0f766e"/>
+  <!-- Medical cross -->
+  <rect x="214" y="96" width="84" height="320" rx="16" fill="white"/>
+  <rect x="96" y="214" width="320" height="84" rx="16" fill="white"/>
+  <!-- Small calendar dots -->
+  <circle cx="176" cy="390" r="18" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="256" cy="390" r="18" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="336" cy="390" r="18" fill="rgba(255,255,255,0.5)"/>
+</svg>

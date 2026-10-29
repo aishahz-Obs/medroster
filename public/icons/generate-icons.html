@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate PWA Icons</title></head>
+<body>
+<canvas id="c192" width="192" height="192"></canvas>
+<canvas id="c512" width="512" height="512"></canvas>
+<script>
+function drawIcon(canvas) {
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width;
+  // background
+  ctx.fillStyle = '#0f766e';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, s * 0.18);
+  ctx.fill();
+  // white cross (medical)
+  ctx.fillStyle = '#ffffff';
+  const arm = s * 0.12;
+  const center = s / 2;
+  const len = s * 0.42;
+  ctx.fillRect(center - arm, center - len / 2, arm * 2, len);
+  ctx.fillRect(center - len / 2, center - arm, len, arm * 2);
+  // calendar lines
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  const barY = center + s * 0.25;
+  const barW = s * 0.5;
+  const barH = s * 0.04;
+  for (let i = 0; i < 3; i++) {
+    ctx.fillRect(center - barW / 2, barY + i * (barH + s * 0.05), barW, barH);
+  }
+}
+
+['c192','c512'].forEach(id => {
+  const canvas = document.getElementById(id);
+  drawIcon(canvas);
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `icon-${canvas.width}.png`;
+    a.click();
+  }, 'image/png');
+});
+</script>
+</body>
+</html>
