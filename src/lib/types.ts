@@ -38,10 +38,10 @@ export interface Location {
 
 export interface RosterEntry {
   id: string;
-  entry_date: string;
+  work_date: string;
   officer_id: string;
   location_id: number | null;
-  shift: ShiftType;
+  shift_type: ShiftType;
   oncall_start: string | null;
   oncall_end: string | null;
   is_tagger: boolean;
@@ -56,9 +56,11 @@ export interface RosterEntry {
 export interface ClockIn {
   id: string;
   officer_id: string;
-  attendance_date: string;
+  work_date: string;
   clocked_in_at: string | null;
-  location_id: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_name: string | null;
   status: AttendanceStatus;
   notes: string | null;
   created_at: string;
@@ -133,7 +135,7 @@ export type Database = {
       profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> };
       locations: { Row: Location; Insert: Partial<Location>; Update: Partial<Location> };
       roster_entries: { Row: RosterEntry; Insert: Partial<RosterEntry>; Update: Partial<RosterEntry> };
-      clock_ins: { Row: ClockIn; Insert: Partial<ClockIn>; Update: Partial<ClockIn> };
+      clock_ins:      { Row: ClockIn;       Insert: Partial<ClockIn>;       Update: Partial<ClockIn>       };
       leave_requests: { Row: LeaveRequest; Insert: Partial<LeaveRequest>; Update: Partial<LeaveRequest> };
       leave_balances: { Row: LeaveBalance; Insert: Partial<LeaveBalance>; Update: Partial<LeaveBalance> };
       courses: { Row: Course; Insert: Partial<Course>; Update: Partial<Course> };
