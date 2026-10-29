@@ -19,10 +19,10 @@ export default async function RosterPage() {
   const { data: entriesRaw } = await supabase
     .from("roster_entries")
     .select("*, officer:profiles(full_name, staff_id, role), location:locations(name, code)")
-    .gte("entry_date", startDate)
-    .lte("entry_date", endDate)
-    .order("entry_date")
-    .order("shift");
+    .gte("work_date", startDate)
+    .lte("work_date", endDate)
+    .order("work_date")
+    .order("shift_type");
   const entries = entriesRaw as RosterEntry[] | null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,7 +35,7 @@ export default async function RosterPage() {
   // Group entries by date then location
   const byDate: Record<string, Record<string, RosterEntry[]>> = {};
   (entries ?? []).forEach(entry => {
-    const date = entry.entry_date;
+    const date = entry.work_date;
     const loc  = entry.location?.name ?? "Unassigned";
     if (!byDate[date]) byDate[date] = {};
     if (!byDate[date][loc]) byDate[date][loc] = [];
@@ -44,10 +44,10 @@ export default async function RosterPage() {
 
   // Stats for today
   const todayStr   = format(today, "yyyy-MM-dd");
-  const todayAll   = (entries ?? []).filter(e => e.entry_date === todayStr);
-  const oncallCount   = todayAll.filter(e => e.shift === "oncall").length;
-  const postcallCount = todayAll.filter(e => e.shift === "postcall").length;
-  const presentCount  = todayAll.filter(e => e.shift === "regular").length;
+  const todayAll   = (entries ?? []).filter(e => e.work_date === todayStr);
+  const oncallCount   = todayAll.filter(e => e.shift_type === "oncall").length;
+  const postcallCount = todayAll.filter(e => e.shift_type === "postcall").length;
+  const presentCount  = todayAll.filter(e => e.shift_type === "regular").length;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -124,9 +124,9 @@ export default async function RosterPage() {
                           {cell.map(entry => (
                             <span
                               key={entry.id}
-                              title={`${entry.officer?.full_name} — ${SHIFT_LABELS[entry.shift]}`}
+                              title={`${entry.officer?.full_name} — ${SHIFT_LABELS[entry.shift_type]}`}
                               className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium truncate max-w-[80px]
-                                ${SHIFT_COLORS[entry.shift]}`}
+                                ${SHIFT_COLORS[entry.shift_type]}`}
                             >
                               {entry.officer?.full_name.split(" ").pop()}
                             </span>
