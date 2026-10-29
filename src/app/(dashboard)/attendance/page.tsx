@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { format, isToday } from "date-fns";
 import { ClockInButton } from "./clock-in-button";
-import { MapPin, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, MapPin } from "lucide-react";
 
 export const metadata = { title: "Attendance" };
 
@@ -21,6 +21,14 @@ export default async function AttendancePage() {
     .eq("work_date", today)
     .maybeSingle();
   const todayClockIn = todayRaw as import("@/lib/types").ClockIn | null;
+
+  // Locations for dropdown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: locationsRaw } = await (supabase.from("locations") as any)
+    .select("id, name")
+    .eq("is_active", true)
+    .order("display_order");
+  const locations = (locationsRaw as { id: number; name: string }[] | null) ?? [];
 
   // Recent history (last 14 days)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,14 +74,6 @@ export default async function AttendancePage() {
               <Clock size={14} />
               <span>{format(new Date(todayClockIn.clocked_in_at!), "h:mm a")}</span>
             </div>
-            {todayClockIn.latitude && todayClockIn.longitude && (
-              <div className="flex items-center gap-2">
-                <MapPin size={14} />
-                <span className="font-mono text-xs">
-                  {Number(todayClockIn.latitude).toFixed(5)}, {Number(todayClockIn.longitude).toFixed(5)}
-                </span>
-              </div>
-            )}
             {todayClockIn.location_name && (
               <div className="flex items-center gap-2">
                 <MapPin size={14} />
@@ -84,7 +84,7 @@ export default async function AttendancePage() {
         )}
 
         {!hasClockedIn && (
-          <ClockInButton userId={user.id} workDate={today} />
+          <ClockInButton userId={user.id} workDate={today} locations={locations} />
         )}
       </div>
 
