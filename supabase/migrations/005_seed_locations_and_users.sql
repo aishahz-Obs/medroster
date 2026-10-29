@@ -1,19 +1,12 @@
 -- ============================================================
--- STEP 1: Seed O&G locations (run this FIRST)
+-- STEP 1: Locations already exist — delete duplicates first
 -- ============================================================
-insert into public.locations (name, code, min_staff, max_staff, display_order)
-values
-  ('Labour Unit',             'LDU',   2, 4,  1),
-  ('PAC 3',                   'PAC3',  1, 2,  2),
-  ('PAC 4',                   'PAC4',  1, 2,  3),
-  ('EPAU/ED',                 'EPAU',  1, 2,  4),
-  ('Ward 8A',                 'W8A',   1, 2,  5),
-  ('Ward 8B',                 'W8B',   1, 2,  6),
-  ('Maternity OT',            'MOT',   2, 3,  7),
-  ('General OT',              'GOT',   1, 2,  8),
-  ('Clinic',                  'CLIN',  1, 2,  9),
-  ('Periphery/Emergency GOT', 'PEGOT', 1, 2, 10)
-on conflict (name) do nothing;
+-- Run this to remove the duplicate rows added by the earlier migration:
+delete from public.locations where id in (15, 16, 23);
+-- Existing canonical locations (DO NOT re-insert):
+-- id=1 Labour Unit | id=2 PAC 3 & 4 | id=3 EPAU / ED
+-- id=4 Ward 8A     | id=5 Ward 8B   | id=6 Maternity OT
+-- id=7 General OT  | id=8 Clinic    | id=9 Periphery / Emergency GOT
 
 
 -- ============================================================
@@ -80,32 +73,32 @@ on conflict (id) do nothing;
 
 do $$
 declare
-  ldu_id   int; pac3_id  int; pac4_id  int;
-  epau_id  int; w8a_id   int; w8b_id   int;
-  mot_id   int; got_id   int; clin_id  int;
+  ldu_id   int; pac_id   int; epau_id  int;
+  w8a_id   int; w8b_id   int; mot_id   int;
+  got_id   int; clin_id  int; periph_id int;
   mon text := to_char(date_trunc('week', current_date), 'YYYY-MM-DD');
   tue text := to_char(date_trunc('week', current_date) + interval '1 day', 'YYYY-MM-DD');
   wed text := to_char(date_trunc('week', current_date) + interval '2 days', 'YYYY-MM-DD');
   thu text := to_char(date_trunc('week', current_date) + interval '3 days', 'YYYY-MM-DD');
   fri text := to_char(date_trunc('week', current_date) + interval '4 days', 'YYYY-MM-DD');
 begin
-  select id into ldu_id  from public.locations where name = 'Labour Unit';
-  select id into pac3_id from public.locations where name = 'PAC 3';
-  select id into pac4_id from public.locations where name = 'PAC 4';
-  select id into epau_id from public.locations where name = 'EPAU/ED';
-  select id into w8a_id  from public.locations where name = 'Ward 8A';
-  select id into w8b_id  from public.locations where name = 'Ward 8B';
-  select id into mot_id  from public.locations where name = 'Maternity OT';
-  select id into got_id  from public.locations where name = 'General OT';
-  select id into clin_id from public.locations where name = 'Clinic';
+  select id into ldu_id    from public.locations where name = 'Labour Unit';
+  select id into pac_id    from public.locations where name = 'PAC 3 & 4';
+  select id into epau_id   from public.locations where name = 'EPAU / ED';
+  select id into w8a_id    from public.locations where name = 'Ward 8A';
+  select id into w8b_id    from public.locations where name = 'Ward 8B';
+  select id into mot_id    from public.locations where name = 'Maternity OT';
+  select id into got_id    from public.locations where name = 'General OT';
+  select id into clin_id   from public.locations where name = 'Clinic';
+  select id into periph_id from public.locations where name = 'Periphery / Emergency GOT';
 
   insert into public.roster_entries (officer_id, entry_date, shift, location_id)
   values
     -- Monday
     ('00000001-0000-0000-0000-000000000001', mon, 'regular',  ldu_id),
     ('00000001-0000-0000-0000-000000000002', mon, 'regular',  ldu_id),
-    ('00000001-0000-0000-0000-000000000003', mon, 'regular',  pac3_id),
-    ('00000001-0000-0000-0000-000000000004', mon, 'regular',  pac4_id),
+    ('00000001-0000-0000-0000-000000000003', mon, 'regular',  pac_id),
+    ('00000001-0000-0000-0000-000000000004', mon, 'regular',  pac_id),
     ('00000001-0000-0000-0000-000000000005', mon, 'oncall',   ldu_id),
     ('00000001-0000-0000-0000-000000000006', mon, 'regular',  epau_id),
     ('00000001-0000-0000-0000-000000000007', mon, 'regular',  w8a_id),
@@ -115,8 +108,8 @@ begin
     -- Tuesday
     ('00000001-0000-0000-0000-000000000011', tue, 'regular',  ldu_id),
     ('00000001-0000-0000-0000-000000000012', tue, 'regular',  ldu_id),
-    ('00000001-0000-0000-0000-000000000013', tue, 'regular',  pac3_id),
-    ('00000001-0000-0000-0000-000000000014', tue, 'regular',  pac4_id),
+    ('00000001-0000-0000-0000-000000000013', tue, 'regular',  pac_id),
+    ('00000001-0000-0000-0000-000000000014', tue, 'regular',  pac_id),
     ('00000001-0000-0000-0000-000000000015', tue, 'oncall',   ldu_id),
     ('00000001-0000-0000-0000-000000000016', tue, 'regular',  epau_id),
     ('00000001-0000-0000-0000-000000000017', tue, 'regular',  w8a_id),
@@ -125,18 +118,18 @@ begin
     ('00000001-0000-0000-0000-000000000020', tue, 'regular',  clin_id),
     -- Wednesday
     ('00000001-0000-0000-0000-000000000021', wed, 'regular',  ldu_id),
-    ('00000001-0000-0000-0000-000000000022', wed, 'regular',  pac3_id),
-    ('00000001-0000-0000-0000-000000000023', wed, 'regular',  pac4_id),
+    ('00000001-0000-0000-0000-000000000022', wed, 'regular',  pac_id),
+    ('00000001-0000-0000-0000-000000000023', wed, 'regular',  epau_id),
     ('00000001-0000-0000-0000-000000000024', wed, 'oncall',   ldu_id),
-    ('00000001-0000-0000-0000-000000000025', wed, 'regular',  epau_id),
-    ('00000001-0000-0000-0000-000000000026', wed, 'regular',  w8a_id),
+    ('00000001-0000-0000-0000-000000000025', wed, 'regular',  w8a_id),
+    ('00000001-0000-0000-0000-000000000026', wed, 'regular',  w8b_id),
     ('00000001-0000-0000-0000-000000000027', wed, 'regular',  w8b_id),
     ('00000001-0000-0000-0000-000000000028', wed, 'regular',  mot_id),
     -- Thursday
     ('00000001-0000-0000-0000-000000000001', thu, 'postcall', ldu_id),
     ('00000001-0000-0000-0000-000000000002', thu, 'regular',  ldu_id),
-    ('00000001-0000-0000-0000-000000000003', thu, 'regular',  pac3_id),
-    ('00000001-0000-0000-0000-000000000004', thu, 'regular',  pac4_id),
+    ('00000001-0000-0000-0000-000000000003', thu, 'regular',  pac_id),
+    ('00000001-0000-0000-0000-000000000004', thu, 'regular',  pac_id),
     ('00000001-0000-0000-0000-000000000005', thu, 'oncall',   w8a_id),
     ('00000001-0000-0000-0000-000000000006', thu, 'regular',  epau_id),
     ('00000001-0000-0000-0000-000000000007', thu, 'regular',  w8a_id),
@@ -145,7 +138,7 @@ begin
     ('00000001-0000-0000-0000-000000000009', fri, 'regular',  ldu_id),
     ('00000001-0000-0000-0000-000000000010', fri, 'regular',  ldu_id),
     ('00000001-0000-0000-0000-000000000011', fri, 'oncall',   ldu_id),
-    ('00000001-0000-0000-0000-000000000012', fri, 'regular',  pac3_id),
+    ('00000001-0000-0000-0000-000000000012', fri, 'regular',  pac_id),
     ('00000001-0000-0000-0000-000000000013', fri, 'regular',  w8a_id),
     ('00000001-0000-0000-0000-000000000014', fri, 'regular',  w8b_id),
     ('00000001-0000-0000-0000-000000000015', fri, 'postcall', epau_id)

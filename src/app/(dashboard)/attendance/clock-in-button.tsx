@@ -6,15 +6,14 @@ import { recordAttendance } from "./actions";
 
 const DUTY_LOCATIONS = [
   "Labour Unit",
-  "PAC 3",
-  "PAC 4",
-  "EPAU/ED",
+  "PAC 3 & 4",
+  "EPAU / ED",
   "Ward 8A",
   "Ward 8B",
   "Maternity OT",
   "General OT",
   "Clinic",
-  "Periphery/Emergency GOT",
+  "Periphery / Emergency GOT",
 ];
 
 const ONCALL_LOCATIONS = [
