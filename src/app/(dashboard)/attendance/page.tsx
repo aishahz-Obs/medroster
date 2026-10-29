@@ -22,14 +22,6 @@ export default async function AttendancePage() {
     .maybeSingle();
   const todayClockIn = todayRaw as import("@/lib/types").ClockIn | null;
 
-  // Locations for dropdown
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: locationsRaw } = await (supabase.from("locations") as any)
-    .select("id, name")
-    .eq("is_active", true)
-    .order("display_order");
-  const locations = (locationsRaw as { id: number; name: string }[] | null) ?? [];
-
   // Recent history (last 14 days)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: historyRaw } = await (supabase.from("clock_ins") as any)
@@ -84,7 +76,7 @@ export default async function AttendancePage() {
         )}
 
         {!hasClockedIn && (
-          <ClockInButton userId={user.id} workDate={today} locations={locations} />
+          <ClockInButton userId={user.id} workDate={today} />
         )}
       </div>
 
@@ -99,11 +91,20 @@ export default async function AttendancePage() {
           <ul className="divide-y divide-gray-100">
             {history.map(entry => {
               const isPresent = !!entry.clocked_in_at;
-              const isMia = entry.status === "mia";
-              const isEl = entry.status === "el";
+              const isMia     = entry.status === "mia";
+              const isEl      = entry.status === "el";
+              let notesData: Record<string, string> = {};
+              try { notesData = JSON.parse(entry.notes ?? "{}"); } catch { /* ignore */ }
+              const workTypeLabel: Record<string, string> = {
+                office_hour: "Office Hour",
+                oncall:      "On-Call",
+                postcall:    "Post-Call",
+                course:      "Course",
+              };
+              const workLabel = workTypeLabel[notesData.work_type] ?? "";
               return (
-                <li key={entry.id} className="px-4 py-3 flex items-center justify-between gap-3">
-                  <div>
+                <li key={entry.id} className="px-4 py-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900">
                       {format(new Date(entry.work_date + "T00:00:00"), "EEE, d MMM yyyy")}
                       {isToday(new Date(entry.work_date + "T00:00:00")) && (
@@ -115,10 +116,14 @@ export default async function AttendancePage() {
                         <Clock size={11} />
                         {format(new Date(entry.clocked_in_at!), "h:mm a")}
                         {entry.location_name && ` · ${entry.location_name}`}
+                        {workLabel && ` · ${workLabel}`}
                       </p>
                     )}
+                    {notesData.work_type === "course" && notesData.course_name && (
+                      <p className="text-xs text-blue-600 mt-0.5">{notesData.course_name} — {notesData.course_location}</p>
+                    )}
                   </div>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${
                     isMia ? "bg-red-100 text-red-700" :
                     isEl  ? "bg-yellow-100 text-yellow-700" :
                     isPresent ? "bg-teal-100 text-teal-700" :
