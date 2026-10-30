@@ -22,6 +22,7 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json() as {
     id:        string;
     full_name: string;
+    email:     string;
     staff_id:  string;
     role:      string;
     phone:     string | null;
@@ -34,12 +35,28 @@ export async function PATCH(req: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
+  // Update auth email if changed
+  const { data: currentProfile } = await admin
+    .from("profiles")
+    .select("email")
+    .eq("id", body.id)
+    .single();
+
+  if (currentProfile && currentProfile.email !== body.email) {
+    const { error: authErr } = await admin.auth.admin.updateUserById(body.id, {
+      email: body.email,
+    });
+    if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
+  }
+
+  // Update profile row
   const { error } = await admin.from("profiles").update({
-    full_name: body.full_name,
-    staff_id:  body.staff_id,
-    role:      body.role,
-    phone:     body.phone,
-    is_active: body.is_active,
+    full_name:  body.full_name,
+    email:      body.email,
+    staff_id:   body.staff_id,
+    role:       body.role,
+    phone:      body.phone,
+    is_active:  body.is_active,
     updated_at: new Date().toISOString(),
   }).eq("id", body.id);
 
