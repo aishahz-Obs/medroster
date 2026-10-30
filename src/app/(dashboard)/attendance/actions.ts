@@ -1,7 +1,14 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createAdminClient(url, key);
+}
 
 export async function recordAttendance(data: {
   date:            string;
@@ -58,9 +65,10 @@ export async function recordAttendance(data: {
     .limit(1)
     .maybeSingle();
 
-  // Upsert roster entry (one per officer per day)
+  // Upsert roster entry using service role to bypass RLS
+  const admin = getAdminClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase.from("roster_entries") as any).upsert(
+  await (admin.from("roster_entries") as any).upsert(
     { officer_id: user.id, entry_date: data.date, shift, location_id: loc?.id ?? null },
     { onConflict: "entry_date,officer_id" }
   );
@@ -129,11 +137,37 @@ export async function recordLeave(data: {
   }
 
   if (entries.length > 0) {
+    // Use service role to bypass RLS
+    const admin = getAdminClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("roster_entries") as any).upsert(entries, {
+    await (admin.from("roster_entries") as any).upsert(entries, {
       onConflict: "entry_date,officer_id",
     });
   }
+
+  revalidatePath("/attendance");
+  revalidatePath("/roster");
+  revalidatePath("/admin/roster");
+  return { error: null };
+}
+
+export async function clearAllAttendanceData() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: me } = await (supabase.from("profiles") as any)
+    .select("role").eq("id", user.id).single();
+  if (!me || me.role !== "superadmin") return { error: "Forbidden" };
+
+  const admin = getAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (admin.from("roster_entries") as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (admin.from("clock_ins") as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (admin.from("leave_requests") as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
   revalidatePath("/attendance");
   revalidatePath("/roster");

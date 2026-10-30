@@ -57,10 +57,13 @@ export function ClockInButton({ userId, workDate }: Props) {
   const [error,          setError]          = useState<string | null>(null);
   const [done,           setDone]           = useState(false);
 
-  const isLeave    = ["annual_leave","emergency_leave","maternal_leave","study_leave","unrecorded_leave"].includes(workStatus);
-  const isOncall   = workStatus === "oncall";
-  const isCourse   = workStatus === "course";
-  const needReason = workStatus === "emergency_leave" || workStatus === "unrecorded_leave";
+  const isLeave      = ["annual_leave","emergency_leave","maternal_leave","study_leave","unrecorded_leave"].includes(workStatus);
+  const isStudyLeave = workStatus === "study_leave";
+  const isOncall     = workStatus === "oncall";
+  const isCourse     = workStatus === "course";
+  const needReason   = workStatus === "emergency_leave" || workStatus === "unrecorded_leave";
+  // Course and non-study leaves hide Location/Date/Time
+  const hideWorkFields = isCourse || (isLeave && !isStudyLeave);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -123,10 +126,38 @@ export function ClockInButton({ userId, workDate }: Props) {
         </select>
       </div>
 
-      {/* Leave flow */}
+      {/* ── Course details panel (no Location/Date/Time) ── */}
+      {isCourse && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-blue-700 font-semibold text-sm">
+            <BookOpen size={15} />
+            Course Details
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Name of course</label>
+            <input type="text" value={courseName} onChange={e => setCourseName(e.target.value)} required
+              placeholder="e.g. Advanced Obstetric Life Support"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Course venue</label>
+            <input type="text" value={courseLocation} onChange={e => setCourseLocation(e.target.value)} required
+              placeholder="e.g. Hospital Kuala Lumpur"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Course time / duration</label>
+            <input type="text" value={courseTime} onChange={e => setCourseTime(e.target.value)} required
+              placeholder="e.g. 8:00 AM – 5:00 PM"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+      )}
+
+      {/* ── Leave flow ── */}
       {isLeave && (
         <>
-          {/* Leave date range */}
+          {/* Leave date range — always shown for all leave types */}
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col gap-3">
             <div className="flex items-center gap-2 text-green-700 font-semibold text-sm">
               <Calendar size={15} />
@@ -146,6 +177,22 @@ export function ClockInButton({ userId, workDate }: Props) {
             </div>
           </div>
 
+          {/* Study Leave: Date + Time of arrival required after leave duration */}
+          {isStudyLeave && (
+            <>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Date <span className="text-red-500">*</span></label>
+                <input type="date" value={date} onChange={e => setDate(e.target.value)} required
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Time of arrival <span className="text-red-500">*</span></label>
+                <input type="time" value={time} onChange={e => setTime(e.target.value)} required
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+            </>
+          )}
+
           {/* Reason — required for Emergency / Unrecorded */}
           {needReason && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col gap-2">
@@ -153,23 +200,18 @@ export function ClockInButton({ userId, workDate }: Props) {
                 <FileText size={15} />
                 Reason <span className="text-red-500">*</span>
               </div>
-              <textarea
-                value={leaveReason}
-                onChange={e => setLeaveReason(e.target.value)}
-                required={needReason}
-                rows={3}
+              <textarea value={leaveReason} onChange={e => setLeaveReason(e.target.value)}
+                required={needReason} rows={3}
                 placeholder="State the reason for this leave…"
-                className="w-full rounded-lg border border-amber-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
-              />
+                className="w-full rounded-lg border border-amber-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none" />
             </div>
           )}
         </>
       )}
 
-      {/* Work flow: Location → Date → Time */}
-      {!isLeave && workStatus !== "" && (
+      {/* ── Normal work flow: Location → Date → Time → On-call panel ── */}
+      {!hideWorkFields && workStatus !== "" && (
         <>
-          {/* 2. Location of duty */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Location of duty</label>
             <select value={location} onChange={e => setLocation(e.target.value)} required
@@ -179,21 +221,18 @@ export function ClockInButton({ userId, workDate }: Props) {
             </select>
           </div>
 
-          {/* 3. Date */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Date</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} required
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
 
-          {/* 4. Time of arrival */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Time of arrival</label>
             <input type="time" value={time} onChange={e => setTime(e.target.value)} required
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
 
-          {/* On-Call location panel */}
           {isOncall && (
             <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-purple-700 font-semibold text-sm">
@@ -205,34 +244,6 @@ export function ClockInButton({ userId, workDate }: Props) {
                 <option value="">Select on-call location…</option>
                 {ONCALL_LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
               </select>
-            </div>
-          )}
-
-          {/* Course details panel */}
-          {isCourse && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-blue-700 font-semibold text-sm">
-                <BookOpen size={15} />
-                Course Details
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Name of course</label>
-                <input type="text" value={courseName} onChange={e => setCourseName(e.target.value)} required
-                  placeholder="e.g. Advanced Obstetric Life Support"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Course venue</label>
-                <input type="text" value={courseLocation} onChange={e => setCourseLocation(e.target.value)} required
-                  placeholder="e.g. Hospital Kuala Lumpur"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Course time / duration</label>
-                <input type="text" value={courseTime} onChange={e => setCourseTime(e.target.value)} required
-                  placeholder="e.g. 8:00 AM – 5:00 PM"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
             </div>
           )}
         </>

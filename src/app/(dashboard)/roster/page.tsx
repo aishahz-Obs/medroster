@@ -103,7 +103,12 @@ export default async function RosterPage({
   const presentCount  = todayAll.filter(e => e.shift === "regular").length;
   const leaveCount    = leavesByDate[todayStr]?.length ?? 0;
 
-  const shortName = (name: string) => name.split(" ").pop() ?? name;
+  const shortName = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    const prefix = parts[0]?.toUpperCase().replace(".", "");
+    // Skip "DR" title, return the next word as first name
+    return prefix === "DR" ? (parts[1] ?? name) : (parts[0] ?? name);
+  };
 
   return (
     <div className="max-w-full px-4 py-6">

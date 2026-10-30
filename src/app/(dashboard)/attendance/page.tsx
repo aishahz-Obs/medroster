@@ -4,6 +4,7 @@ import { format, isToday } from "date-fns";
 import { ClockInButton } from "./clock-in-button";
 import { EditAttendanceModal } from "./edit-attendance-modal";
 import { Clock, CheckCircle2, AlertTriangle, MapPin, Users } from "lucide-react";
+import { ClearDataButton } from "./clear-data-button";
 import type { ClockIn } from "@/lib/types";
 
 export const metadata = { title: "Attendance" };
@@ -65,9 +66,12 @@ export default async function AttendancePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
-        <p className="text-sm text-gray-500">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
+      <div className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
+          <p className="text-sm text-gray-500">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
+        </div>
+        {me?.role === "superadmin" && <ClearDataButton />}
       </div>
 
       {/* Today's status card */}
