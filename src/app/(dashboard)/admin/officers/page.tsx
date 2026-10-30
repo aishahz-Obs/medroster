@@ -4,6 +4,7 @@ import { ROLE_LABELS } from "@/lib/constants";
 import { Users, UserCheck, Shield } from "lucide-react";
 import type { Profile } from "@/lib/types";
 import { AddOfficerForm } from "./add-officer-form";
+import { EditOfficerForm } from "./edit-officer-form";
 
 export const metadata = { title: "Officers" };
 
@@ -65,8 +66,9 @@ export default async function OfficersPage() {
 
       {/* Officers table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">All Officers</h2>
+          <span className="text-xs text-gray-400">{counts.total} total</span>
         </div>
         {(!officers || officers.length === 0) ? (
           <div className="px-4 py-10 text-center text-sm text-gray-400">No officers found.</div>
@@ -80,6 +82,7 @@ export default async function OfficersPage() {
                   <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Email</th>
                   <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
                   <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide w-10"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -99,6 +102,17 @@ export default async function OfficersPage() {
                       }`}>
                         {o.is_active ? "Active" : "Inactive"}
                       </span>
+                    </td>
+                    <td className="px-2 py-3 text-right">
+                      <EditOfficerForm officer={{
+                        id:        o.id,
+                        full_name: o.full_name,
+                        email:     o.email,
+                        staff_id:  o.staff_id,
+                        role:      o.role,
+                        phone:     o.phone ?? null,
+                        is_active: o.is_active,
+                      }} />
                     </td>
                   </tr>
                 ))}
