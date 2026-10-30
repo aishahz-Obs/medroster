@@ -72,12 +72,14 @@ export const SHIFT_LABELS: Record<string, string> = {
   regular:  "Regular",
   oncall:   "On-Call",
   postcall: "Post-Call",
+  leave:    "On Leave",
 };
 
 export const SHIFT_COLORS: Record<string, string> = {
   regular:  "bg-brand-100 text-brand-700",
   oncall:   "bg-purple-100 text-purple-800",
   postcall: "bg-orange-100 text-orange-800",
+  leave:    "bg-green-100 text-green-800",
 };
 
 // ─── Role Labels ──────────────────────────────────────────────────────────────

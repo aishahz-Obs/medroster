@@ -3,7 +3,7 @@
 // For now, these are the manual types matching the schema.
 
 export type UserRole = "superadmin" | "admin" | "user";
-export type ShiftType = "regular" | "oncall" | "postcall";
+export type ShiftType = "regular" | "oncall" | "postcall" | "leave";
 export type LeaveType = "annual" | "maternity" | "study" | "emergency" | "replacement";
 export type LeaveStatus = "pending" | "approved" | "rejected" | "blocked" | "cancelled";
 export type AttendanceStatus = "present" | "mia" | "el" | "leave";
